@@ -172,6 +172,12 @@ function setupCanvas() {
     el.canvas.addEventListener('pointerup', () => {
         //ctx.closePath;
         el.canvas.removeEventListener('pointermove', onPointerPaint, false);
+        socket.emit("message", {
+            message: "mouseUp",
+            x: mouse.x,
+            y: mouse.y,
+            id: this_client_id,
+        });
     }, false);
 
 
@@ -216,7 +222,6 @@ function declareIdentity(identity) {
     socket.emit("declare-identity", {
         identity,
         message: "browser version of " + identity + " connected",
-        id: this_client_id,
     });
 }
 

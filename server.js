@@ -14,6 +14,7 @@ var io;
 var options;
 
 
+let clientIndex = 0;
 
 let clients = {};
 
@@ -24,13 +25,6 @@ async function main() {
 main();
 
 async function setupHttpsServer() {
-    // var http = require('http');
-    // var portHttp = process.env.PORTHTTP || 80;
-
-    // var serverHttp = http.createServer(app).listen(portHttp, () => {
-    //     console.log("listening on " + portHttp);
-    // });
-
     var https = require('https');
     port = process.env.PORT || 8080;
 
@@ -47,16 +41,22 @@ async function setupHttpsServer() {
 function setupSocketServer() {
     console.log("setting up socket server");
     io.on("connection", (client) => {
-        console.log("User " + client.id + " connected");
+
+        let thisClientIndex = clientIndex;
+        clientIndex++;
+
+        console.log("User " + client.id + " connected. Assigning index: " + thisClientIndex);
 
         clients[client.id] = {
-            id: client.id
+            id: client.id,
+            client_index: thisClientIndex,
         };
 
         client.emit(
             "introduction",
             {
                 id: client.id,
+                client_index: thisClientIndex,
                 clients: Object.keys(clients)
             }
         );
@@ -65,6 +65,7 @@ function setupSocketServer() {
             "newUserConnected",
             {
                 id: client.id,
+                client_index: thisClientIndex,
                 clients: Object.keys(clients),
             }
         );
@@ -75,12 +76,13 @@ function setupSocketServer() {
                 "userDisconnected",
                 {
                     id: client.id,
+                    client_index: thisClientIndex,
                     clients: Object.keys(clients)
                 }
             );
 
             console.log(
-                "User " + client.id + " disconnected"
+                "User " + client.id + "(" + thisClientIndex + ") disconnected"
             );
         });
 
@@ -93,24 +95,32 @@ function setupSocketServer() {
         });
 
         client.on("declare-identity", (data) => {
-            if (data.identity != null) { };
             io.sockets.emit(
                 "identity-declared",
-                data
+                {
+                    client_index: thisClientIndex,
+                    ...data
+                }
             );
         });
 
         client.on("mouseMove", (data) => {
             client.broadcast.emit(
                 "onMouseMove",
-                data
+                {
+                    client_index: thisClientIndex,
+                    ...data
+                }
             );
         });
 
         client.on("message", (data) => {
             io.sockets.emit(
                 "onMessage",
-                data
+                {
+                    client_index: thisClientIndex,
+                    ...data
+                }
             );
         });
     });
