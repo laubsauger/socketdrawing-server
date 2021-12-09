@@ -16,8 +16,9 @@ let mouse = {
 window.onload = async () => {
     identity = document.querySelector("body").getAttribute("id");
     el.canvas = document.querySelector("#canvas");
-    el.container = document.querySelector("#canvas-container");
+    el.container = document.querySelector("#canvas_container");
     el.console = document.querySelector("#console");
+    el.resetButton = document.querySelector("#reset_button");
     //setupConsole();
 
     setupCanvas();
@@ -187,7 +188,24 @@ function setupCanvas() {
         });
         onPaint(mouse.x, mouse.y);
     };
+
+    el.resetButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        socket.emit("message", {
+            identity,
+            message: "clear",
+            id: this_client_id
+        });
+        clearCanvas();
+    });
 }
+
+function clearCanvas() {
+    ctx.closePath;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+}
+
 
 function onPaint(x, y) {
     ctx.lineTo(x, y);

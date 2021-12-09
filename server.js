@@ -105,23 +105,13 @@ function setupSocketServer() {
                 "onMouseMove",
                 data
             );
-
-            client.on("message", (data) => {
-                const messageUser = {
-                    id: data.id,
-                    message: data.message,
-                }
-                const foundUser = findClientInRoom(data.id);
-                if (foundUser != null) {
-                    foundUser.message = data.message;
-                }
-
-                io.sockets.emit(
-                    "messageSent",
-                    {
-                        ...messageUser,
-                    }
-                );
-            });
         });
-    }
+
+        client.on("message", (data) => {
+            io.sockets.emit(
+                "onMessage",
+                data
+            );
+        });
+    });
+}

@@ -14,3 +14,17 @@ h2 {
     width: 100%;
     height: 100%;
 }
+
+#reset_button { 
+    width: 3rem;
+    height: 3rem;
+    display: block;
+    color: gray;
+    background: gray;
+    border: black 2px solid;
+    border-radius: 20%;
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 10;
+}
