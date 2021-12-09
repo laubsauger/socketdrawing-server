@@ -11,8 +11,6 @@ options = {
 
 var port;
 var io;
-var options;
-
 
 let clientIndex = 0;
 
