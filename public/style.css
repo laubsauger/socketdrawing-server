@@ -1,6 +1,6 @@
 body {
     font-family: sans-serif;
-    background: gray;
+    background: #1F1C21;
     overscroll-behavior: contain;
 }
 
@@ -14,20 +14,44 @@ h2 {
     top: 0;
     width: 100%;
     height: 100%;
+    
 }
 
-#reset_button { 
+.btn{
     width: 3rem;
     height: 3rem;
     display: block;
-    color: gray;
-    background: gray;
-    border: black 2px solid;
-    border-radius: 20%;
+    z-index: 10;
     position: fixed;
+    border: white 2px solid;
+    border-radius: 20%;
+}
+
+
+
+#b1 { 
+    background: black;
+    left: 10px;
+    top: 10px;
+}
+
+#b2 { 
+    background: green;
     right: 10px;
     top: 10px;
-    z-index: 10;
+}
+
+#b3 {
+    background: red;
+    left: 10px;
+    bottom: 10px;
+}
+
+
+#b4 {
+    background: blue;
+    right: 10px;
+    bottom: 10px;
 }
 
 

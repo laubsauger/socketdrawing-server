@@ -2,6 +2,7 @@ const socketServer = config.socketServer || "https://localhost:8080";
 let debug = false;
 let socket
 let this_client_id;
+let this_client_index = 0;
 let el = {};
 let clients = {};
 let identity;
@@ -21,7 +22,7 @@ window.onload = async () => {
     el.canvas = document.querySelector("#canvas");
     el.container = document.querySelector("#canvas_container");
     el.console = document.querySelector("#console");
-    el.resetButton = document.querySelector("#reset_button");
+    el.btns = document.getElementsByClassName("btn");
     setupConsole();
 
     setupCanvas();
@@ -91,7 +92,7 @@ function addIdentityToClients(user) {
 
 
 function initSocketConnection() {
-    console.log("attempting connection to " + socketServer);
+    console.log("attempting socket connection");
     socket = io(socketServer, { secure: true });
     socket.on("connect", () => {
         console.log("socket.io connected to " + socketServer);
@@ -107,55 +108,8 @@ function initSocketConnection() {
 
     socket.on("introduction", (payload) => {
         this_client_id = payload.id;
-        for (let i = 0; i < payload.clients.length; i++) {
-            if (payload.clients[i] != this_client_id) {
-                addClient(payload.clients[i]);
-
-            }
-        };
-
-        socket.on("identity-declared", (payload) => {
-            //check for 
-        });
-
-        socket.on("newUserConnected", (payload) => {
-            let alreadyHasUser = false;
-
-            for (let i = 0; i < Object.keys(clients).length; i++) {
-                if (Object.keys(clients)[i] == payload.id) {
-                    alreadyHasUser = true;
-                    break;
-                }
-            }
-
-            if (payload.id != this_client_id && !alreadyHasUser) {
-                addClient(payload.id);
-            } else {
-                declareIdentity(identity);
-            }
-
-        });
-
-        socket.on("userDisconnected", (payload) => {
-            if (payload.id != this_client_id) {
-                delete clients[payload.id];
-            }
-        });
-
-        socket.on("onMessage", (payload) => {
-            switch (payload.message) {
-                case "mouseUp":
-                    //ctx.closePath();
-                    break;
-
-            }
-        });
-
-        socket.on("onMouseMove", (payload) => {
-            let screen_x = payload.x * el.canvas.width;
-            let screen_y = payload.y * el.canvas.height;
-            onPaint(screen_x, screen_y);
-        });
+        this_client_index = payload.client_index;
+        console.log("introduced as client_index" + payload.client_index);
     });
 }
 
@@ -179,11 +133,7 @@ function setupCanvas() {
     })();
 
     el.canvas.addEventListener('mousedown', (e) => {
-        console.log("mouse down: " + e.pageX);
-        ctx.closePath();
         mouse = getMousePosition(e);
-        ctx.moveTo(mouse.x, mouse.y);
-        ctx.beginPath();
         painting = true;
     }, false);
 
@@ -207,16 +157,12 @@ function setupCanvas() {
 
     el.canvas.addEventListener("touchstart", (e) => {
         let touch = e.touches[0];
-        ctx.closePath();
         mouse = getMousePosition(touch);
-        ctx.moveTo(mouse.x, mouse.y);
-        ctx.beginPath();
         painting = true;
     }, false);
 
     el.canvas.addEventListener("touchend", (e) => {
         let touch = e.touches[0];
-        ctx.closePath;
         painting = false;
         socket.emit("message", {
             message: "mouseUp",
@@ -262,15 +208,16 @@ function setupCanvas() {
         onPaint(mouse.x, mouse.y);
     };
 
-    el.resetButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        socket.emit("message", {
-            identity,
-            message: "clear",
-            id: this_client_id
+    for (var i = 0; i < el.btns.length; i++) {
+        el.btns[i].addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("clicking btn: " + e.target.id);
+            socket.emit("message", {
+                message: e.target.id,
+                id: this_client_id,
+            });
         });
-        clearCanvas();
-    });
+    }
 }
 
 function getMousePosition(e) {
@@ -298,8 +245,17 @@ function clearCanvas() {
 
 
 function onPaint(x, y) {
-    ctx.lineTo(x, y);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.strokeStyle = "#fff";
     ctx.stroke();
+    ctx.closePath();
+    // ctx.lineTo(x, y);
+    // ctx.stroke();
 }
 
 function addClient(_id) {

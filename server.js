@@ -78,7 +78,6 @@ function setupSocketServer() {
                     clients: Object.keys(clients)
                 }
             );
-
             console.log(
                 "User " + client.id + "(" + thisClientIndex + ") disconnected"
             );
@@ -90,16 +89,6 @@ function setupSocketServer() {
 
         client.on("error", (err) => {
             console.log("there was an error on the connection!", err);
-        });
-
-        client.on("declare-identity", (data) => {
-            io.sockets.emit(
-                "identity-declared",
-                {
-                    client_index: thisClientIndex,
-                    ...data
-                }
-            );
         });
 
         client.on("mouseMove", (data) => {
