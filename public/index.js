@@ -211,7 +211,6 @@ function getMousePosition(e) {
     mouse.y = e.pageY - el.canvas.offsetTop;
     mouse.normalized_x = mouse.x / el.canvas.width;
     mouse.normalized_y = mouse.y / el.canvas.height;
-    console.log("mouse", mouse);
     return mouse;
 }
 
@@ -230,6 +229,7 @@ function onPaint(x, y) {
 function declareIdentity(identity) {
     socket.emit("declare-identity", {
         identity,
+        id: this_client_id,
         message: "browser version of " + identity + " connected",
     });
 }
