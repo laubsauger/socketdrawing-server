@@ -1,5 +1,5 @@
 const socketServer = config.socketServer || "https://localhost:8080";
-const debug = config.debug || false; //TODO - add a querystring 
+let debug = false;
 let socket
 let this_client_id;
 let el = {};
@@ -9,8 +9,11 @@ let ctx; //canvas context.
 let consoleElement;
 let mouse = {
     x: 0,
-    y: 0
+    y: 0,
+    normalized_x: 0,
+    normalized_x: 0,
 }
+let painting = false;
 
 
 window.onload = async () => {
@@ -19,7 +22,7 @@ window.onload = async () => {
     el.container = document.querySelector("#canvas_container");
     el.console = document.querySelector("#console");
     el.resetButton = document.querySelector("#reset_button");
-    //setupConsole();
+    setupConsole();
 
     setupCanvas();
     resizeCanvas();
@@ -39,12 +42,15 @@ const resizeCanvas = () => {
 
 
 const addToConsole = (_string) => {
-    el.consoles.innerHTML += "<br>" + _string;
+    el.console.innerHTML += "<br>" + _string;
 }
 
-
 const setupConsole = () => {
-
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    if (params.debug) {
+        debug = true;
+    }
     if (debug && "console" in window) {
         methods = [
             "log", "assert", "clear", "count",
@@ -136,15 +142,12 @@ function initSocketConnection() {
             }
         });
 
-        socket.on("messageSent", (payload) => {
-            const messagingUser = findUserInRoom(payload.id);
-            if (messagingUser != null) {
-                if (messagingUser.identity != identity) {
-                    if (room[messagingUser.identity] != null) {
-                        room[messagingUser.identity].message = payload.message;
-                        updateRoomMessages();
-                    }
-                }
+        socket.on("onMessage", (payload) => {
+            switch (payload.message) {
+                case "mouseUp":
+                    //ctx.closePath();
+                    break;
+
             }
         });
 
@@ -162,17 +165,32 @@ function setupCanvas() {
     ctx.lineWidth = 20;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    el.canvas.addEventListener('pointerdown', (e) => {
+
+
+    window.requestAnimFrame = (function (callback) {
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimaitonFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+    })();
+
+    el.canvas.addEventListener('mousedown', (e) => {
+        console.log("mouse down: " + e.pageX);
+        ctx.closePath();
         mouse = getMousePosition(e);
-        //ctx.beginPath();
         ctx.moveTo(mouse.x, mouse.y);
-        el.canvas.addEventListener('pointermove', onPointerPaint, false);
+        ctx.beginPath();
+        painting = true;
     }, false);
 
 
-    el.canvas.addEventListener('pointerup', () => {
-        //ctx.closePath;
-        el.canvas.removeEventListener('pointermove', onPointerPaint, false);
+    el.canvas.addEventListener('mouseup', () => {
+        ctx.closePath;
+        painting = false;
         socket.emit("message", {
             message: "mouseUp",
             x: mouse.normalized_x,
@@ -181,10 +199,59 @@ function setupCanvas() {
         });
     }, false);
 
+    el.canvas.addEventListener('mousemove', (e) => {
+        if (painting) {
+            onMousePaint(e);
+        }
+    });
 
-    el.canvas.addEventListener
+    el.canvas.addEventListener("touchstart", (e) => {
+        let touch = e.touches[0];
+        ctx.closePath();
+        mouse = getMousePosition(touch);
+        ctx.moveTo(mouse.x, mouse.y);
+        ctx.beginPath();
+        painting = true;
+    }, false);
 
-    const onPointerPaint = (e) => {
+    el.canvas.addEventListener("touchend", (e) => {
+        let touch = e.touches[0];
+        ctx.closePath;
+        painting = false;
+        socket.emit("message", {
+            message: "mouseUp",
+            x: mouse.normalized_x,
+            y: mouse.normalized_y,
+            id: this_client_id,
+        });
+    }, false);
+
+    el.canvas.addEventListener("touchmove", (e) => {
+        let touch = e.touches[0];
+        if (painting) {
+            onMousePaint(touch);
+        }
+        el.canvas.dispatchEvent(mouseEvent);
+    }, false);
+
+    document.body.addEventListener("touchstart", function (e) {
+        if (e.target == el.canvas) {
+            e.preventDefault();
+        }
+    }, false);
+    document.body.addEventListener("touchend", function (e) {
+        if (e.target == el.canvas) {
+            e.preventDefault();
+        }
+    }, false);
+    document.body.addEventListener("touchmove", function (e) {
+        if (e.target == el.canvas) {
+            e.preventDefault();
+        }
+    }, false);
+
+
+    const onMousePaint = (e) => {
         mouse = getMousePosition(e);
         socket.emit("mouseMove", {
             identity,
@@ -214,6 +281,15 @@ function getMousePosition(e) {
     return mouse;
 }
 
+function getTouchPosition(e) {
+    mouse.x = e.touches[0].pageX - el.canvas.offsetLeft;
+    mouse.y = e.touches[0].pageY - el.canvas.offsetTop;
+    mouse.normalized_x = mouse.x / el.canvas.width;
+    mouse.normalized_y = mouse.y / el.canvas.height;
+    return mouse;
+}
+
+
 function clearCanvas() {
     ctx.closePath;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -224,14 +300,6 @@ function clearCanvas() {
 function onPaint(x, y) {
     ctx.lineTo(x, y);
     ctx.stroke();
-}
-
-function declareIdentity(identity) {
-    socket.emit("declare-identity", {
-        identity,
-        id: this_client_id,
-        message: "browser version of " + identity + " connected",
-    });
 }
 
 function addClient(_id) {

@@ -1,6 +1,7 @@
 body {
     font-family: sans-serif;
-    background: white;
+    background: gray;
+    overscroll-behavior: contain;
 }
 
 h2 {
@@ -24,7 +25,14 @@ h2 {
     border: black 2px solid;
     border-radius: 20%;
     position: fixed;
-    bottom: 10px;
-    left: 10px;
+    right: 10px;
+    top: 10px;
     z-index: 10;
+}
+
+
+#console {
+    position: absolute;
+    z-index: 10;
+    color: black;
 }
