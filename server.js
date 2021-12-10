@@ -113,6 +113,7 @@ function setupSocketServer() {
         });
 
         client.on("message", (data) => {
+            console.log(thisClientIndex + ":" + data.message, data);
             io.sockets.emit(
                 "onMessage",
                 {

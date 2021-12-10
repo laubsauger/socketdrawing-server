@@ -149,7 +149,9 @@ function initSocketConnection() {
         });
 
         socket.on("onMouseMove", (payload) => {
-            onPaint(payload.x, payload.y);
+            let screen_x = payload.x * el.canvas.width;
+            let screen_y = payload.y * el.canvas.height;
+            onPaint(screen_x, screen_y);
         });
     });
 }
@@ -161,8 +163,7 @@ function setupCanvas() {
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     el.canvas.addEventListener('pointerdown', (e) => {
-        mouse.x = e.pageX - el.canvas.offsetLeft;
-        mouse.y = e.pageY - el.canvas.offsetTop;
+        mouse = getMousePosition(e);
         //ctx.beginPath();
         ctx.moveTo(mouse.x, mouse.y);
         el.canvas.addEventListener('pointermove', onPointerPaint, false);
@@ -174,8 +175,8 @@ function setupCanvas() {
         el.canvas.removeEventListener('pointermove', onPointerPaint, false);
         socket.emit("message", {
             message: "mouseUp",
-            x: mouse.x,
-            y: mouse.y,
+            x: mouse.normalized_x,
+            y: mouse.normalized_y,
             id: this_client_id,
         });
     }, false);
@@ -184,12 +185,11 @@ function setupCanvas() {
     el.canvas.addEventListener
 
     const onPointerPaint = (e) => {
-        mouse.x = e.pageX - el.canvas.offsetLeft;
-        mouse.y = e.pageY - el.canvas.offsetTop;
+        mouse = getMousePosition(e);
         socket.emit("mouseMove", {
             identity,
-            x: mouse.x,
-            y: mouse.y,
+            x: mouse.normalized_x,
+            y: mouse.normalized_y,
             id: this_client_id
         });
         onPaint(mouse.x, mouse.y);
@@ -204,6 +204,15 @@ function setupCanvas() {
         });
         clearCanvas();
     });
+}
+
+function getMousePosition(e) {
+    mouse.x = e.pageX - el.canvas.offsetLeft;
+    mouse.y = e.pageY - el.canvas.offsetTop;
+    mouse.normalized_x = mouse.x / el.canvas.width;
+    mouse.normalized_y = mouse.y / el.canvas.height;
+    console.log("mouse", mouse);
+    return mouse;
 }
 
 function clearCanvas() {
