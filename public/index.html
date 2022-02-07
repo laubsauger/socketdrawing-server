@@ -1,30 +1,36 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <title>DADS Drawing</title>
 
-<head>
-    <title>DADS Drawing</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js"
+            integrity="sha512-oFOCo2/3DtjrJG4N27BjSLQWoiBv171sK6a+JiWjp/7agxC2nCUP358AqzxkBUb5jX8g6CYLPdSKQTbC0weCwA=="
+            crossorigin="anonymous">
+        </script>
 
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js"
-        integrity="sha512-oFOCo2/3DtjrJG4N27BjSLQWoiBv171sK6a+JiWjp/7agxC2nCUP358AqzxkBUb5jX8g6CYLPdSKQTbC0weCwA=="
-        crossorigin="anonymous"></script>
+        <script src="config.js"></script>
+        <script src="index.js"></script>
+        <link rel="stylesheet" href="style.css">
+    </head>
 
-    <script src="config.js"></script>
-    <script src="index.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <body id="painter">
+        <div id="status" style="color: #fff; pointer-events: none;"></div>
 
-<body id="painter">
-    <div id="canvas_container">
-        <canvas id="canvas"></canvas>
-    </div>
-    <a href="#" class="btn" id="b1"></a>
-    <a href="#" class="btn" id="b2"></a>
-    <a href="#" class="btn" id="b3"></a>
-    <a href="#" class="btn" id="b4"></a>
-</body>
-<div id="console"></div>
+        <div id="controls" style="display: none;">
+            <div id="canvas_container">
+                <canvas id="canvas"></canvas>
+            </div>
 
+            <a href="#" class="btn" id="b1"></a>
+            <a href="#" class="btn" id="b2"></a>
+            <a href="#" class="btn" id="b3"></a>
+            <a href="#" class="btn" id="b4"></a>
+        </div>
 
-
+        <div style="margin-top: 75px;">
+            <div id="info" style="margin-top: 75px; pointer-events: none; color: #fff; font-family: monospace;"></div>
+            <div id="console" style="margin-top: 75px; pointer-events: none; color: #fff; font-family: monospace;"></div>
+        </div>
+    </body>
 </html>
