@@ -16,6 +16,7 @@ var io;
 const maxActiveClients = process.env.MAX_USERS || 4;
 
 let clientSlots = [];
+let lastTriedSlotIndex = 0;
 
 for (let i=0; i<maxActiveClients; i++) {
   clientSlots.push({
@@ -44,11 +45,19 @@ async function setupHttpsServer() {
   }).listen(serverHttps);
 }
 
-const assignClientSlot = (newClient, requestedSlot) => {
-  if (requestedSlot) {
+function random(mn, mx) {
+  return Math.random() * (mx - mn) + mn;
+}
+
+const getRandomArrayElement = (arr) => {
+  return arr[Math.floor(random(1, arr.length))-1];
+}
+
+const assignClientSlot = (newClient, requestedSlotIndex) => {
+  if (requestedSlotIndex) {
     // assign client id to it
     clientSlots = clientSlots.map(slot => {
-      if (slot.slot_index !== requestedSlot) {
+      if (slot.slot_index !== requestedSlotIndex) {
         return slot;
       }
 
@@ -63,7 +72,7 @@ const assignClientSlot = (newClient, requestedSlot) => {
       }
     });
 
-    return requestedSlot;
+    return requestedSlotIndex;
   }
 
   const usedSlots = getUsedClientSlots();
@@ -73,8 +82,10 @@ const assignClientSlot = (newClient, requestedSlot) => {
     return false;
   }
 
-  // get first free slot
-  const nextFreeSlotIndex = clientSlots.filter(slot => !slot.client.id)[0].slot_index;
+  const freeSlots = clientSlots.filter(slot => !slot.client.id);
+  const freeSlotsExcludingLastTried = freeSlots.length > 1 ? freeSlots.filter(slot => slot.slot_index !== lastTriedSlotIndex) : freeSlots;
+  // get random free slot
+  const nextFreeSlotIndex = getRandomArrayElement(freeSlotsExcludingLastTried).slot_index;
 
   // assign client id to it
   clientSlots = clientSlots.map(slot => {
@@ -111,13 +122,14 @@ const getUsedClientSlots = () => {
 function setupSocketServer() {
   console.log('setting up socket server');
   io.on('connection', (client) => {
-    let requestedSlot = false;
+    let requestedSlotIndex = false;
     if (client.handshake.query && client.handshake.query['wantsSlot']) {
-      requestedSlot = Number(client.handshake.query['wantsSlot']);
-      console.log('requested slot, will overtake', requestedSlot);
+      requestedSlotIndex = Number(client.handshake.query['wantsSlot']);
+      console.log('requested slot, will overtake', requestedSlotIndex);
     }
 
-    const assignedClientSlotIndex = assignClientSlot(client, requestedSlot);
+    const assignedClientSlotIndex = assignClientSlot(client, requestedSlotIndex);
+    lastTriedSlotIndex = assignedClientSlotIndex;
 
     if (assignedClientSlotIndex === false) {
       console.log('no slot assigned, ejecting');
@@ -152,7 +164,7 @@ function setupSocketServer() {
     );
 
     client.on('disconnect', () => {
-      resetClientSlot(client.id);
+      resetClientSlot(client);
 
       io.sockets.emit(
         'userDisconnected',

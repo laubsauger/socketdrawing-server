@@ -285,10 +285,11 @@ function setupCanvas() {
     };
 
     const buttonPressListener = (e) => {
+        console.log('btn down: ' + e.target.id);
+
         activeButtons[e.target.id] = true;
 
         e.preventDefault();
-        console.log('btn down: ' + e.target.id);
         socket.emit(`message`, {
             message: 'button',
             identity,
@@ -299,10 +300,11 @@ function setupCanvas() {
     }
 
     const buttonReleaseListener = (e) => {
+        console.log('btn up: ' + e.target.id);
+
         activeButtons[e.target.id] = false;
 
         e.preventDefault();
-        console.log('btn up: ' + e.target.id);
         socket.emit(`message`, {
             message: 'button',
             identity,

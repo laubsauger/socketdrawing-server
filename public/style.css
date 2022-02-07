@@ -27,31 +27,46 @@ h2 {
     border-radius: 20%;
 }
 
+.btn {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 
 #b1 { 
-    background: black;
+    background: #000;
+    border: #000 2px solid;
     left: 10px;
     top: 10px;
 }
 
 #b2 { 
     background: green;
+    border: green 2px solid;
     right: 10px;
     top: 10px;
 }
 
 #b3 {
     background: red;
+    border: red 2px solid;
     left: 10px;
     bottom: 10px;
 }
 
-
 #b4 {
     background: blue;
+    border: blue 2px solid;
     right: 10px;
     bottom: 10px;
+}
+
+.btn:active {
+    border: white 2px solid !important;
 }
 
 
