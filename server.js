@@ -1,10 +1,9 @@
 // express server
 const fs = require('fs');
 const express = require('express');
-const app = express();
-// const https = require('https');
 const https = require('http');
-const io = require('socket.io');
+
+const app = express();
 
 app.use(express.static('public'));
 
@@ -13,7 +12,9 @@ options = {
   // cert: fs.readFileSync('certs/server.crt')
 };
 
-const port = Number(process.env.PORT) || 80;
+const port = Number(process.env.PORT) || 443;
+
+var io;
 
 const maxActiveClients = process.env.MAX_USERS || 4;
 
@@ -35,11 +36,12 @@ async function main() {
 main();
 
 async function setupHttpsServer() {
+
   const serverHttps = https.createServer(options, app).listen(port, (e) => {
     console.log('listening on ' + port);
   });
 
-  io({
+  io = require('socket.io')({
     cors: true
   }).listen(serverHttps);
 }
