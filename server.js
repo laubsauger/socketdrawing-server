@@ -1,18 +1,17 @@
 // express server
 const fs = require('fs');
 const express = require('express');
+const app = express();
 const https = require('http');
 
-const app = express();
-
-app.use(express.static('public'));
+// app.use(express.static('public'));
 
 options = {
   // key: fs.readFileSync('certs/server.key'),
   // cert: fs.readFileSync('certs/server.crt')
 };
 
-const port = Number(process.env.PORT) || 80;
+const port = Number(process.env.PORT) || 8080;
 
 var io;
 
