@@ -2,20 +2,13 @@
 const fs = require('fs');
 const express = require('express');
 const app = express();
-const https = require('http');
-
-// app.use(express.static('public'));
-
-options = {
-  // key: fs.readFileSync('certs/server.key'),
-  // cert: fs.readFileSync('certs/server.crt')
-};
+const http = require('http');
 
 const port = Number(process.env.PORT) || 8080;
 
 var io;
 
-const maxActiveClients = process.env.MAX_USERS || 4;
+const maxActiveClients = process.env.MAX_USERS || 8;
 
 let clientSlots = [];
 let lastTriedSlotIndex = 0;
@@ -35,10 +28,10 @@ async function main() {
 main();
 
 async function setupHttpsServer() {
-
-  const serverHttps = https.createServer(options, app).listen(port, (e) => {
-    console.log('listening on ' + port);
-  });
+  const serverHttps = http.createServer(app)
+                          .listen(port, (e) => {
+                            console.log('listening on ' + port);
+                          });
 
   io = require('socket.io')({
     cors: true

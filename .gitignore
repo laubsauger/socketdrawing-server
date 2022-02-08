@@ -72,7 +72,7 @@ crashlytics-build.properties
 
 
 **/node_modules
-
+nginx.conf
 **/certs
 **/ssl_certs
 public/config.js
