@@ -12,7 +12,7 @@ options = {
   // cert: fs.readFileSync('certs/server.crt')
 };
 
-const port = Number(process.env.PORT) || 443;
+const port = Number(process.env.PORT) || 80;
 
 var io;
 
