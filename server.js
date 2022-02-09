@@ -114,6 +114,7 @@ const getUsedClientSlots = () => {
 
 function setupSocketServer() {
   console.log('setting up socket server');
+
   io.on('connection', (client) => {
     let requestedSlotIndex = false;
     if (client.handshake.query && client.handshake.query['wantsSlot']) {
@@ -182,12 +183,15 @@ function setupSocketServer() {
     });
 
     client.on('message', (data) => {
+      const processing_start = new Date().getTime();
+
       console.log(assignedClientSlotIndex + ':' + data.message, data);
       io.sockets.emit(
         'onMessage',
         {
+          ...data,
           client_index: assignedClientSlotIndex,
-          ...data
+          processed: new Date().getTime() - processing_start,
         }
       );
     });

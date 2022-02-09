@@ -23,6 +23,7 @@ window.onload = async () => {
     el.container = document.querySelector('#canvas_container');
     el.console = document.querySelector('#console');
     el.info = document.querySelector('#info');
+    el.latencyInfo = document.querySelector('#latencyInfo');
     el.status = document.querySelector('#status');
     el.controls = document.querySelector('#controls');
     el.btns = document.getElementsByClassName('btn');
@@ -34,6 +35,13 @@ window.onload = async () => {
     initSocketConnection();
 };
 
+const createMessageData = (msgData) => {
+    return {
+        ...msgData,
+        timestamp: new Date().getTime(),
+    }
+}
+
 window.onresize = () => {
     resizeCanvas();
 }
@@ -44,8 +52,8 @@ const resizeCanvas = () => {
     el.canvas.height = el.canvas.offsetHeight;
 };
 
-const updateClientInfo = (id, index, numUsers, maxNumUsers) => {
-    el.info.innerHTML = `Slot: ${index} | Users: ${numUsers}/${maxNumUsers} | ${id}`
+const updateClientInfo = (id, index, numUsers, maxNumUsers, ping=false) => {
+    el.info.innerHTML = `Slot: ${index} | Users: ${numUsers}/${maxNumUsers}`;
 }
 
 const addToConsole = (_string) => {
@@ -54,6 +62,10 @@ const addToConsole = (_string) => {
 
 const updateStatus = (msg) => {
     el.status.innerHTML += '<br>' + msg;
+}
+
+const updateLatencyInfo = (ping) => {
+    el.latencyInfo.innerHTML =  `Latency: ${ping !== false ? `${ping}ms` : 'na' }`;
 }
 
 const showControls = () => {
@@ -119,6 +131,7 @@ function initSocketConnection() {
     const urlSearchParams = new URLSearchParams(window.location.search);
     const params = Object.fromEntries(urlSearchParams.entries());
     let query = '';
+
     if (params.slot) {
         query = `wantsSlot=${params.slot}`;
     }
@@ -170,6 +183,15 @@ function initSocketConnection() {
         console.log('userDisconnected', payload);
 
         updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxClients);
+    });
+
+    socket.on('onMessage', (payload) => {
+        if (payload.client_index === this_client_index) {
+            // console.log('onOwnMessage', payload);
+            const ping = (new Date()).getTime() - payload.timestamp - payload.processed;
+
+            updateLatencyInfo(ping);
+        }
     });
 }
 
@@ -256,12 +278,12 @@ function setupCanvas() {
         }
 
         console.log('mouseDown', state);
-        socket.emit('message', {
+        socket.emit('message', createMessageData({
             message: 'mouseDown',
             identity,
             state: state,
             id: this_client_id,
-        });
+        }));
     }
 
     document.body.addEventListener('mouseup', (e) => {
@@ -274,13 +296,13 @@ function setupCanvas() {
 
     const emitPaintMessage = (event) => {
         const mousePos = getMousePosition(event);
-        socket.emit('message', {
+        socket.emit('message', createMessageData({
             message: 'paint',
             identity,
             x: mousePos.normalized_x,
             y: mousePos.normalized_y,
             id: this_client_id
-        });
+        }));
         updateCanvasCrossHair(mousePos);
     };
 
@@ -290,13 +312,13 @@ function setupCanvas() {
         activeButtons[e.target.id] = true;
 
         e.preventDefault();
-        socket.emit(`message`, {
+        socket.emit(`message`, createMessageData({
             message: 'button',
             identity,
             btnId: e.target.id,
             state: 1,
             id: this_client_id,
-        });
+        }));
     }
 
     const buttonReleaseListener = (e) => {
@@ -305,13 +327,13 @@ function setupCanvas() {
         activeButtons[e.target.id] = false;
 
         e.preventDefault();
-        socket.emit(`message`, {
+        socket.emit(`message`, createMessageData({
             message: 'button',
             identity,
             btnId: e.target.id,
             state: 0,
             id: this_client_id,
-        });
+        }));
     }
 
     const resetButtons = () => {
@@ -329,15 +351,6 @@ function setupCanvas() {
 
         el.btns[i].addEventListener('mouseup', buttonReleaseListener);
         el.btns[i].addEventListener('touchEnd', buttonReleaseListener);
-
-        // el.btns[i].addEventListener('click', (e) => {
-        //     e.preventDefault();
-        //     console.log('clicking btn: ' + e.target.id);
-        //     socket.emit('message', {
-        //         message: e.target.id,
-        //         id: this_client_id,
-        //     });
-        // });
     }
 }
 
