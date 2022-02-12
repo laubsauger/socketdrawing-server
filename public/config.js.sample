@@ -1,3 +1,0 @@
-const config = {
-    socketServer: "https://localhost:8080"
-};
