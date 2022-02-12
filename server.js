@@ -8,14 +8,20 @@ const port = Number(process.env.PORT) || 8080;
 
 var io;
 
-const maxActiveClients = process.env.MAX_USERS || 8;
+const maxUsers = process.env.MAX_USERS || 8;
+// const maxActiveClients = process.env.MAX_CLIENTS || 8;
 
-let clientSlots = [];
+const rooms = {
+  users: 'users',
+  control: 'control',
+}
+
+let userSlots = [];
 let lastTriedSlotIndex = 0;
 
-for (let i=0; i<maxActiveClients; i++) {
-  clientSlots.push({
-    slot_index: i+1,
+for (let i = 0; i < maxUsers; i++) {
+  userSlots.push({
+    slot_index: i + 1,
     client: {},
   });
 }
@@ -46,10 +52,10 @@ const getRandomArrayElement = (arr) => {
   return arr[Math.floor(random(1, arr.length))-1];
 }
 
-const assignClientSlot = (newClient, requestedSlotIndex) => {
+const assignClientSlot = (roomState, newClient, requestedSlotIndex) => {
+  // override requested slot and assign new client id to it
   if (requestedSlotIndex) {
-    // assign client id to it
-    clientSlots = clientSlots.map(slot => {
+    userSlots = userSlots.map(slot => {
       if (slot.slot_index !== requestedSlotIndex) {
         return slot;
       }
@@ -68,20 +74,21 @@ const assignClientSlot = (newClient, requestedSlotIndex) => {
     return requestedSlotIndex;
   }
 
-  const usedSlots = getUsedClientSlots();
-
-  if (usedSlots.length + 1 > maxActiveClients) {
+  const usedSlots = roomState.usedSlots;
+  if (usedSlots.length + 1 > roomState.maxSlots) {
     console.log('no available slot for new client', newClient.id);
     return false;
   }
 
-  const freeSlots = clientSlots.filter(slot => !slot.client.id);
+  // get free slots
+  const freeSlots = userSlots.filter(slot => !slot.client.id);
   const freeSlotsExcludingLastTried = freeSlots.length > 1 ? freeSlots.filter(slot => slot.slot_index !== lastTriedSlotIndex) : freeSlots;
-  // get random free slot
+
+  // pick random free slot
   const nextFreeSlotIndex = getRandomArrayElement(freeSlotsExcludingLastTried).slot_index;
 
   // assign client id to it
-  clientSlots = clientSlots.map(slot => {
+  userSlots = userSlots.map(slot => {
     if (slot.slot_index !== nextFreeSlotIndex) {
       return slot;
     }
@@ -96,7 +103,7 @@ const assignClientSlot = (newClient, requestedSlotIndex) => {
 }
 
 const resetClientSlot = (client) => {
-  clientSlots = clientSlots.map(slot => {
+  userSlots = userSlots.map(slot => {
     if (slot.client.id !== client.id) {
       return slot;
     }
@@ -108,70 +115,122 @@ const resetClientSlot = (client) => {
   });
 }
 
-const getUsedClientSlots = () => {
-  return clientSlots.filter(slot => !!slot.client.id);
+const createRoomState = (clientsInRoom) => {
+  const numClients = clientsInRoom ? clientsInRoom.size : 0;
+
+  return {
+    usedSlots: numClients,
+    maxSlots: maxUsers,
+  };
 }
 
 function setupSocketServer() {
   console.log('setting up socket server');
 
   io.on('connection', (client) => {
-    let requestedSlotIndex = false;
-    if (client.handshake.query && client.handshake.query['wantsSlot']) {
-      requestedSlotIndex = Number(client.handshake.query['wantsSlot']);
-      console.log('requested slot, will overtake', requestedSlotIndex);
-    }
+    let assignedClientSlotIndex = false;
 
-    const assignedClientSlotIndex = assignClientSlot(client, requestedSlotIndex);
-    lastTriedSlotIndex = assignedClientSlotIndex;
+    // socket osc join request
+    client.on('OSC_JOIN_REQUEST', (room) => {
+      console.log(`OSC_JOIN_REQUEST`, client.id, room);
+      client.join(rooms.control);
 
-    if (assignedClientSlotIndex === false) {
-      console.log('no slot assigned, ejecting');
-      client.disconnect();
-      return;
-    }
-
-    const usedClientSlots = getUsedClientSlots();
-    console.log(`User ${usedClientSlots.length}/${maxActiveClients} ` + client.id + ' connected. Assigning index: ' + assignedClientSlotIndex);
-    console.log('  ');
-
-    client.emit(
-      'introduction',
-      {
+      io.sockets.to(client.id).emit('OSC_JOIN_ACCEPTED', {
         id: client.id,
-        client_index: assignedClientSlotIndex,
-        clients: Object.keys(clientSlots),
-        usedSlots: getUsedClientSlots().length,
-        maxClients: maxActiveClients,
-      }
-    );
+      });
 
-    io.sockets.emit(
-      'newUserConnected',
-      {
+      const newRoomState = createRoomState(io.sockets.adapter.rooms.get(rooms.control));
+      io.sockets.to(rooms.control).emit(
+        'OSC_JOINED',
+        newRoomState
+      );
+    });
+
+    // user join request
+    client.on('USER_JOIN_REQUEST', ({ room, wantsSlot }) => {
+      console.log(`USER_JOIN_REQUEST`, client.id, room, wantsSlot);
+
+      let requestedSlotIndex = false;
+      if (wantsSlot && wantsSlot > 0 && wantsSlot <= maxUsers) {
+        requestedSlotIndex = wantsSlot;
+        console.log('=> requested slot, will overtake', requestedSlotIndex);
+      }
+
+      const roomState = createRoomState(io.sockets.adapter.rooms.get(rooms.users));
+      assignedClientSlotIndex = assignClientSlot(roomState, client, requestedSlotIndex);
+      lastTriedSlotIndex = assignedClientSlotIndex;
+
+      if (assignedClientSlotIndex === false) {
+        io.sockets.to(client.id).emit(
+          'USER_JOIN_REJECTED',
+          {
+            reason: `Room is currently full ${roomState.usedSlots}/${roomState.maxSlots}`,
+          }
+        );
+
+        return;
+      }
+
+      client.join(rooms.users);
+
+      io.sockets.to(client.id).emit('USER_JOIN_ACCEPTED', {
         id: client.id,
-        client_index: assignedClientSlotIndex,
-        clients: Object.keys(clientSlots),
-        usedSlots: getUsedClientSlots().length,
-        maxClients: maxActiveClients,
-      }
-    );
+        userSlot: assignedClientSlotIndex,
+      });
 
-    client.on('disconnect', () => {
-      resetClientSlot(client);
-
-      io.sockets.emit(
-        'userDisconnected',
+      const newRoomState = createRoomState(io.sockets.adapter.rooms.get(rooms.users));
+      console.log('OSC_CTRL_USER_JOINED', client.id);
+      io.sockets.to(rooms.control).emit(
+        'OSC_CTRL_USER_JOINED',
         {
           id: client.id,
           client_index: assignedClientSlotIndex,
-          clients: Object.keys(clientSlots),
-          usedSlots: getUsedClientSlots().length,
-          maxClients: maxActiveClients,
+          usedSlots: newRoomState.usedSlots,
+          maxSlots: maxUsers,
         }
       );
 
+      io.sockets.to(rooms.users).emit(
+        'USER_JOINED',
+        newRoomState
+      );
+    });
+
+    client.on('disconnect', () => {
+      const newRoomState = createRoomState(io.sockets.adapter.rooms.get(rooms.users));
+
+      io.sockets.to(rooms.control).emit(
+        'OSC_CTRL_USER_LEFT',
+        {
+          id: client.id,
+          client_index: assignedClientSlotIndex,
+          usedSlots: newRoomState.usedSlots,
+          maxSlots: newRoomState.maxSlots,
+        }
+      );
+
+      io.sockets.to(rooms.users).emit(
+        'USER_LEFT',
+        newRoomState,
+      );
+
+      resetClientSlot(client);
       console.log( 'User ' + client.id + '(' + assignedClientSlotIndex + ') disconnected');
+    });
+
+    client.on('OSC_CTRL_MESSAGE', (data) => {
+      const processing_start = new Date().getTime();
+      console.log('OSC_CTRL_MESSAGE', '| Slot:', assignedClientSlotIndex, '|', data)
+      // @todo: make this dependant on current config
+        // @todo: if we want to show users what others are doing in real time we'll need to broad cast to themn too
+      io.sockets.to(rooms.control).emit(
+        'OSC_CTRL_MESSAGE',
+        {
+          ...data,
+          client_index: assignedClientSlotIndex,
+          processed: new Date().getTime() - processing_start,
+        }
+      );
     });
 
     client.on('connect_failed', (err) => {
@@ -180,20 +239,6 @@ function setupSocketServer() {
 
     client.on('error', (err) => {
       console.log('there was an error on the connection!', err);
-    });
-
-    client.on('message', (data) => {
-      const processing_start = new Date().getTime();
-
-      console.log(assignedClientSlotIndex + ':' + data.message, data);
-      io.sockets.emit(
-        'onMessage',
-        {
-          ...data,
-          client_index: assignedClientSlotIndex,
-          processed: new Date().getTime() - processing_start,
-        }
-      );
     });
   });
 }

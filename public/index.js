@@ -120,7 +120,6 @@ function addIdentityToClients(user) {
     }
 }
 
-
 const activeButtons = [];
 
 function initSocketConnection() {
@@ -165,24 +164,24 @@ function initSocketConnection() {
         showControls();
 
         isActiveSession = true;
-        console.log('introduced as client_index', payload.client_index, payload.maxClients);
+        console.log('introduced as client_index', payload.client_index, payload.maxSlots);
 
         this_client_id = payload.id;
         this_client_index = payload.client_index;
 
-        updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxClients);
+        updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxSlots);
     });
 
     socket.on('newUserConnected', (payload) => {
         console.log('newUserConnected', payload);
 
-        updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxClients);
+        updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxSlots);
     });
 
     socket.on('userDisconnected', (payload) => {
         console.log('userDisconnected', payload);
 
-        updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxClients);
+        updateClientInfo(this_client_id, this_client_index, payload.usedSlots, payload.maxSlots);
     });
 
     socket.on('onMessage', (payload) => {
@@ -219,7 +218,6 @@ function setupCanvas() {
         emitPaintMessage(e);
     }, false);
 
-
     el.canvas.addEventListener('mouseup', () => {
         ctx.closePath;
         painting = false;
@@ -238,7 +236,6 @@ function setupCanvas() {
     }, false);
 
     el.canvas.addEventListener('touchend', (e) => {
-        let touch = e.touches[0];
         painting = false;
         emitMouseDownState(0);
     }, false);
@@ -255,7 +252,7 @@ function setupCanvas() {
         emitMouseDownState(1);
 
         if (e.target === el.canvas) {
-            // e.preventDefault();
+            e.preventDefault();
             emitPaintMessage(e);
         }
     }, false);
@@ -263,7 +260,7 @@ function setupCanvas() {
         emitMouseDownState(0);
 
         if (e.target === el.canvas) {
-            // e.preventDefault();
+            e.preventDefault();
         }
     }, false);
     document.body.addEventListener('touchmove', function (e) {
