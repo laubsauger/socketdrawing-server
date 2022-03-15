@@ -1,5 +1,4 @@
 // express server
-const fs = require('fs');
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -9,7 +8,6 @@ const port = Number(process.env.PORT) || 8080;
 var io;
 
 const maxUsers = process.env.MAX_USERS || 8;
-// const maxActiveClients = process.env.MAX_CLIENTS || 8;
 
 const rooms = {
   users: 'users',
@@ -74,8 +72,7 @@ const assignClientSlot = (roomState, newClient, requestedSlotIndex) => {
     return requestedSlotIndex;
   }
 
-  const usedSlots = roomState.usedSlots;
-  if (usedSlots.length + 1 > roomState.maxSlots) {
+  if (roomState.usedSlots + 1 > roomState.maxSlots) {
     console.log('no available slot for new client', newClient.id);
     return false;
   }
