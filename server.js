@@ -127,6 +127,14 @@ function setupSocketServer() {
   io.on('connection', (client) => {
     let assignedClientSlotIndex = false;
 
+    client.on('DISCO_DIFFUSION_PROMPT', data => {
+      console.log(`DISCO_DIFFUSION_PROMPT`, client.id, data);
+      io.sockets.to(rooms.control).emit(
+        'DISCO_DIFFUSION_PROMPT',
+        data
+      );
+    })
+
     // socket osc join request
     client.on('OSC_JOIN_REQUEST', (room) => {
       console.log(`OSC_JOIN_REQUEST`, client.id, room);
