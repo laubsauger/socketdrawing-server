@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Dummy instance",
+    "description": "Awesome session description",
+    "settings": {
+      "slots": 2,
+      "randomPick": false,
+      "controls": {
+        "xy": true,
+        "buttons": 4,
+        "fader": 0
+      }
+    }
+  },
+  {
+    "id": 2,
+    "name": "Another Session",
+    "description": "Even better session description",
+    "settings": {
+      "slots": 4,
+      "randomPick": true,
+      "controls": {
+        "xy": true,
+        "buttons": 1,
+        "fader": 0
+      }
+    }
+  }
+]

@@ -1,28 +1,77 @@
-// express server
 const express = require('express');
 const app = express();
 const http = require('http');
+const fs = require("fs");
+const path = require("path");
 
 const port = Number(process.env.PORT) || 8080;
 
+const crossOriginDomainsTest = [
+  'http://localhost:3000',
+];
+
+const crossOriginDomainsProd = [
+  'https://osc.link'
+];
+
+const headerConfig = (req, res, next) => {
+  // allow external requests
+  if (process.env.NODE_ENV === 'production') {
+    const origin = req.headers.origin;
+    if (crossOriginDomainsProd.indexOf(origin) > -1) {
+      res.append('Access-Control-Allow-Origin', origin);
+    }
+  } else {
+    const origin = req.headers.origin;
+    if (crossOriginDomainsTest.indexOf(origin) > -1) {
+      res.append('Access-Control-Allow-Origin', origin);
+    }
+  }
+
+  // Access-Control-Allow-Credentials
+  res.append('Access-Control-Allow-Credentials', 'true');
+  // allow rest http verbs
+  res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+  // allow content type header
+  res.append('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Requested-With');
+  next();
+};
+
 var io;
 
-const maxUsers = process.env.MAX_USERS || 8;
-
-const rooms = {
+const roomTypes = {
   users: 'users',
   control: 'control',
 }
 
-let userSlots = [];
-let lastTriedSlotIndex = 0;
+// @todo: get this from a store of sorts (db, flat file whatever)
+const instancesConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'dummy/instances.json'), 'utf-8'));
 
-for (let i = 0; i < maxUsers; i++) {
-  userSlots.push({
-    slot_index: i + 1,
-    client: {},
-  });
-}
+console.log(instancesConfig)
+
+const instances = instancesConfig.map(instanceConfig => {
+  let userSlots = [];
+
+  for (let i = 0; i < instanceConfig.settings.slots; i++) {
+    userSlots.push({
+      slot_index: i + 1,
+      client: {},
+    });
+  }
+
+  return {
+    ...instanceConfig,
+    rooms: {
+      users: `${roomTypes.users}:${instanceConfig.id}`,
+      control: `${roomTypes.control}:${instanceConfig.id}`,
+    },
+    userSlots: userSlots,
+    lastTriedSlotIndex: 0,
+  }
+});
+
+// let userSlots = [];
+// let lastTriedSlotIndex = 0;
 
 async function main() {
   await setupHttpsServer();
@@ -31,7 +80,17 @@ async function main() {
 
 main();
 
+
 async function setupHttpsServer() {
+  // app.use(helmet());
+  app.use(headerConfig);
+  // app.use(bodyParser.urlencoded({ extended: true }));
+  // app.use(bodyParser.json());
+  // app.use(require('sanitize').middleware);
+
+  //@todo: api mock - static config file
+  app.use('/api', express.static(path.join(__dirname, 'dummy')));
+
   const serverHttps = http.createServer(app)
                           .listen(port, (e) => {
                             console.log('listening on ' + port);
@@ -50,10 +109,10 @@ const getRandomArrayElement = (arr) => {
   return arr[Math.floor(random(1, arr.length))-1];
 }
 
-const assignClientSlot = (roomState, newClient, requestedSlotIndex) => {
+const assignClientSlot = (instance, roomState, newClient, requestedSlotIndex) => {
   // override requested slot and assign new client id to it
   if (requestedSlotIndex) {
-    userSlots = userSlots.map(slot => {
+    instance.userSlots = instance.userSlots.map(slot => {
       if (slot.slot_index !== requestedSlotIndex) {
         return slot;
       }
@@ -78,14 +137,14 @@ const assignClientSlot = (roomState, newClient, requestedSlotIndex) => {
   }
 
   // get free slots
-  const freeSlots = userSlots.filter(slot => !slot.client.id);
-  const freeSlotsExcludingLastTried = freeSlots.length > 1 ? freeSlots.filter(slot => slot.slot_index !== lastTriedSlotIndex) : freeSlots;
+  const freeSlots = instance.userSlots.filter(slot => !slot.client.id);
+  const freeSlotsExcludingLastTried = freeSlots.length > 1 ? freeSlots.filter(slot => slot.slot_index !== instance.lastTriedSlotIndex) : freeSlots;
 
   // pick random free slot
   const nextFreeSlotIndex = getRandomArrayElement(freeSlotsExcludingLastTried).slot_index;
 
   // assign client id to it
-  userSlots = userSlots.map(slot => {
+  instance.userSlots = instance.userSlots.map(slot => {
     if (slot.slot_index !== nextFreeSlotIndex) {
       return slot;
     }
@@ -99,8 +158,9 @@ const assignClientSlot = (roomState, newClient, requestedSlotIndex) => {
   return nextFreeSlotIndex;
 }
 
-const resetClientSlot = (client) => {
-  userSlots = userSlots.map(slot => {
+const resetClientSlot = (instance, client) => {
+  console.log(instance)
+  instance.userSlots = instance.userSlots.map(slot => {
     if (slot.client.id !== client.id) {
       return slot;
     }
@@ -112,12 +172,12 @@ const resetClientSlot = (client) => {
   });
 }
 
-const createRoomState = (clientsInRoom) => {
+const createRoomState = (instance, clientsInRoom) => {
   const numClients = clientsInRoom ? clientsInRoom.size : 0;
 
   return {
     usedSlots: numClients,
-    maxSlots: maxUsers,
+    maxSlots: instance.settings.slots,
   };
 }
 
@@ -128,8 +188,15 @@ function setupSocketServer() {
     let assignedClientSlotIndex = false;
 
     client.on('DISCO_DIFFUSION_PROMPT', data => {
+      const instance = instances.filter(item => item.id === client.instanceId)[0];
+
+      if (!instance) {
+        console.error('Invalid Instance');
+        return false;
+      }
+
       console.log(`DISCO_DIFFUSION_PROMPT`, client.id, data);
-      io.sockets.to(rooms.control).emit(
+      io.sockets.to(instance.rooms.control).emit(
         'DISCO_DIFFUSION_PROMPT',
         data
       );
@@ -137,15 +204,24 @@ function setupSocketServer() {
 
     // socket osc join request
     client.on('OSC_JOIN_REQUEST', (room) => {
-      console.log(`OSC_JOIN_REQUEST`, client.id, room);
-      client.join(rooms.control);
+      const instance = instances.filter(item => item.rooms.control === room)[0];
+
+      if (!instance) {
+        console.error('Invalid Room requested', room);
+        return false;
+      }
+
+      console.log(`OSC_JOIN_REQUEST`, '| Instance:', instance.id, client.id, room);
+
+      client.join(instance.rooms.control);
 
       io.sockets.to(client.id).emit('OSC_JOIN_ACCEPTED', {
         id: client.id,
       });
 
-      const newRoomState = createRoomState(io.sockets.adapter.rooms.get(rooms.control));
-      io.sockets.to(rooms.control).emit(
+      const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.control));
+
+      io.sockets.to(roomTypes.control).emit(
         'OSC_JOINED',
         newRoomState
       );
@@ -153,17 +229,24 @@ function setupSocketServer() {
 
     // user join request
     client.on('USER_JOIN_REQUEST', ({ room, wantsSlot }) => {
-      console.log(`USER_JOIN_REQUEST`, client.id, room, wantsSlot);
+      const instance = instances.filter(item => item.rooms.users === room)[0];
+
+      if (!instance) {
+        console.error('Invalid Room', room);
+        return false;
+      }
+
+      console.log(`USER_JOIN_REQUEST`, '| Instance:', instance.id, client.id, room, wantsSlot);
 
       let requestedSlotIndex = false;
-      if (wantsSlot && wantsSlot > 0 && wantsSlot <= maxUsers) {
+      if (wantsSlot && wantsSlot > 0 && wantsSlot <= instance.settings.slots) {
         requestedSlotIndex = wantsSlot;
         console.log('=> requested slot, will overtake', requestedSlotIndex);
       }
 
-      const roomState = createRoomState(io.sockets.adapter.rooms.get(rooms.users));
-      assignedClientSlotIndex = assignClientSlot(roomState, client, requestedSlotIndex);
-      lastTriedSlotIndex = assignedClientSlotIndex;
+      const roomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.users));
+      assignedClientSlotIndex = assignClientSlot(instance, roomState, client, requestedSlotIndex);
+      instance.lastTriedSlotIndex = assignedClientSlotIndex;
 
       if (assignedClientSlotIndex === false) {
         io.sockets.to(client.id).emit(
@@ -176,35 +259,43 @@ function setupSocketServer() {
         return;
       }
 
-      client.join(rooms.users);
+      client.join(instance.rooms.users);
+      client.instanceId = instance.id;
 
       io.sockets.to(client.id).emit('USER_JOIN_ACCEPTED', {
         id: client.id,
         userSlot: assignedClientSlotIndex,
       });
 
-      const newRoomState = createRoomState(io.sockets.adapter.rooms.get(rooms.users));
-      console.log('OSC_CTRL_USER_JOINED', client.id);
-      io.sockets.to(rooms.control).emit(
+      const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.users));
+      console.log('OSC_CTRL_USER_JOINED', '| Instance:', instance.id,  client.id);
+      io.sockets.to(instance.rooms.control).emit(
         'OSC_CTRL_USER_JOINED',
         {
           id: client.id,
           client_index: assignedClientSlotIndex,
           usedSlots: newRoomState.usedSlots,
-          maxSlots: maxUsers,
+          maxSlots: instance.settings.slots,
         }
       );
 
-      io.sockets.to(rooms.users).emit(
+      io.sockets.to(instance.rooms.users).emit(
         'USER_JOINED',
         newRoomState
       );
     });
 
     client.on('disconnect', () => {
-      const newRoomState = createRoomState(io.sockets.adapter.rooms.get(rooms.users));
+      const instance = instances.filter(item => item.id === client.instanceId)[0];
 
-      io.sockets.to(rooms.control).emit(
+      if (!instance) {
+        console.error('Invalid Instance');
+        return false;
+      }
+
+      const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.users));
+
+      io.sockets.to(instance.rooms.control).emit(
         'OSC_CTRL_USER_LEFT',
         {
           id: client.id,
@@ -214,21 +305,28 @@ function setupSocketServer() {
         }
       );
 
-      io.sockets.to(rooms.users).emit(
+      io.sockets.to(instance.rooms.users).emit(
         'USER_LEFT',
         newRoomState,
       );
 
-      resetClientSlot(client);
+      resetClientSlot(instance, client);
       console.log( 'User ' + client.id + '(' + assignedClientSlotIndex + ') disconnected');
     });
 
     client.on('OSC_CTRL_MESSAGE', (data) => {
       const processing_start = new Date().getTime();
-      console.log('OSC_CTRL_MESSAGE', '| Slot:', assignedClientSlotIndex, '|', data)
+      const instance = instances.filter(item => item.id === client.instanceId)[0];
+
+      if (!instance) {
+        console.error('Invalid Instance');
+        return false;
+      }
+
+      console.log('OSC_CTRL_MESSAGE', '| Instance:', instance.id, '| Slot:', assignedClientSlotIndex, '|', data)
       // @todo: make this dependant on current config
-        // @todo: if we want to show users what others are doing in real time we'll need to broad cast to themn too
-      io.sockets.to(rooms.control).emit(
+        // @todo: if we want to show users what others are doing in real time we'll need to broad cast to them too
+      io.sockets.to(instance.rooms.control).emit(
         'OSC_CTRL_MESSAGE',
         {
           ...data,
