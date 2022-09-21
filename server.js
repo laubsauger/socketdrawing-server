@@ -8,6 +8,7 @@ const port = Number(process.env.PORT) || 8080;
 
 const crossOriginDomainsTest = [
   'http://localhost:3000',
+  'http://localhost:3001',
 ];
 
 const crossOriginDomainsProd = [
@@ -191,7 +192,7 @@ function setupSocketServer() {
       const instance = instances.filter(item => item.id === client.instanceId)[0];
 
       if (!instance) {
-        console.error('Invalid Instance');
+        console.error('DISCO_DIFFUSION_PROMPT::Invalid Instance');
         return false;
       }
 
@@ -289,7 +290,7 @@ function setupSocketServer() {
       const instance = instances.filter(item => item.id === client.instanceId)[0];
 
       if (!instance) {
-        console.error('Invalid Instance');
+        console.error('disconnect::Invalid Instance');
         return false;
       }
 
@@ -319,7 +320,7 @@ function setupSocketServer() {
       const instance = instances.filter(item => item.id === client.instanceId)[0];
 
       if (!instance) {
-        console.error('Invalid Instance');
+        console.error('OSC_CTRL_MESSAGE::Invalid Instance');
         return false;
       }
 
