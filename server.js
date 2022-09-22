@@ -3,7 +3,7 @@ const app = express();
 const http = require('http');
 const fs = require("fs");
 const path = require("path");
-
+const cors = require('cors');
 const port = Number(process.env.PORT) || 8080;
 
 const crossOriginDomainsTest = [
@@ -17,17 +17,17 @@ const crossOriginDomainsProd = [
 
 const headerConfig = (req, res, next) => {
   // allow external requests
-  if (process.env.NODE_ENV === 'production') {
-    const origin = req.headers.origin;
-    if (crossOriginDomainsProd.indexOf(origin) > -1) {
-      res.append('Access-Control-Allow-Origin', origin);
-    }
-  } else {
-    const origin = req.headers.origin;
-    if (crossOriginDomainsTest.indexOf(origin) > -1) {
-      res.append('Access-Control-Allow-Origin', origin);
-    }
-  }
+  // if (process.env.NODE_ENV === 'production') {
+  //   const origin = req.headers.origin;
+  //   if (crossOriginDomainsProd.indexOf(origin) > -1) {
+  //     res.append('Access-Control-Allow-Origin', origin);
+  //   }
+  // } else {
+  //   const origin = req.headers.origin;
+  //   if (crossOriginDomainsTest.indexOf(origin) > -1) {
+  //     res.append('Access-Control-Allow-Origin', origin);
+  //   }
+  // }
 
   // Access-Control-Allow-Credentials
   res.append('Access-Control-Allow-Credentials', 'true');
@@ -83,6 +83,9 @@ main();
 
 
 async function setupHttpsServer() {
+  app.use(cors({
+    origin: '*'
+  }));
   // app.use(helmet());
   app.use(headerConfig);
   // app.use(bodyParser.urlencoded({ extended: true }));
