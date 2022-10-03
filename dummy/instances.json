@@ -1,12 +1,13 @@
 [
   {
     "id": 1,
-    "name": "Dummy instance",
+    "name": "Test Session",
     "description": "Awesome session description",
     "settings": {
-      "slots": 2,
+      "slots": 4,
       "randomPick": false,
       "controls": {
+        "text": true,
         "xy": true,
         "buttons": 4,
         "fader": 0
@@ -21,8 +22,24 @@
       "slots": 4,
       "randomPick": true,
       "controls": {
+        "text": false,
         "xy": true,
         "buttons": 1,
+        "fader": 0
+      }
+    }
+  },
+  {
+    "id": 3,
+    "name": "Session with Text Prompt",
+    "description": "Testing texts",
+    "settings": {
+      "slots": 2,
+      "randomPick": false,
+      "controls": {
+        "text": true,
+        "xy": true,
+        "buttons": 4,
         "fader": 0
       }
     }

@@ -191,20 +191,20 @@ function setupSocketServer() {
   io.on('connection', (client) => {
     let assignedClientSlotIndex = false;
 
-    client.on('DISCO_DIFFUSION_PROMPT', data => {
-      const instance = instances.filter(item => item.id === client.instanceId)[0];
-
-      if (!instance) {
-        console.error('DISCO_DIFFUSION_PROMPT::Invalid Instance');
-        return false;
-      }
-
-      console.log(`DISCO_DIFFUSION_PROMPT`, client.id, data);
-      io.sockets.to(instance.rooms.control).emit(
-        'DISCO_DIFFUSION_PROMPT',
-        data
-      );
-    })
+    // client.on('DISCO_DIFFUSION_PROMPT', data => {
+    //   const instance = instances.filter(item => item.id === client.instanceId)[0];
+    //
+    //   if (!instance) {
+    //     console.error('DISCO_DIFFUSION_PROMPT::Invalid Instance');
+    //     return false;
+    //   }
+    //
+    //   console.log(`DISCO_DIFFUSION_PROMPT`, client.id, data);
+    //   io.sockets.to(instance.rooms.control).emit(
+    //     'DISCO_DIFFUSION_PROMPT',
+    //     data
+    //   );
+    // })
 
     // socket osc join request
     client.on('OSC_JOIN_REQUEST', (room) => {
