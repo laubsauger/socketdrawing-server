@@ -7,7 +7,7 @@
       "slots": 4,
       "randomPick": false,
       "controls": {
-        "text": true,
+        "text": false,
         "xy": true,
         "buttons": 4,
         "fader": 0
