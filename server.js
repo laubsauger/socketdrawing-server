@@ -219,11 +219,12 @@ function setupSocketServer() {
 
       client.join(instance.rooms.control);
 
+      const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.control));
+
       io.sockets.to(client.id).emit('OSC_JOIN_ACCEPTED', {
         id: client.id,
+        ...newRoomState
       });
-
-      const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.control));
 
       io.sockets.to(roomTypes.control).emit(
         'OSC_JOINED',
