@@ -1,46 +1,55 @@
 [
   {
     "id": 1,
-    "name": "Test Session",
+    "name": "Default",
     "description": "Awesome session description",
     "settings": {
       "slots": 4,
       "randomPick": false,
       "controls": {
-        "text": false,
         "xy": true,
-        "buttons": 4,
-        "fader": 0
+        "buttons": 4
       }
     }
   },
   {
     "id": 2,
-    "name": "Another Session",
-    "description": "Even better session description",
+    "name": "Sensors",
+    "description": "Demoing accelerometer and gyroscope input",
     "settings": {
       "slots": 4,
-      "randomPick": true,
+      "randomPick": false,
       "controls": {
-        "text": false,
-        "xy": true,
-        "buttons": 1,
-        "fader": 0
+        "buttons": 4,
+        "accelerometer": true,
+        "gyroscope": true
       }
     }
   },
   {
     "id": 3,
-    "name": "Session with Text Prompt",
+    "name": "Faders",
+    "description": "Uses linear faders",
+    "settings": {
+      "slots": 4,
+      "randomPick": false,
+      "controls": {
+        "buttons": 4,
+        "fader": 4
+      }
+    }
+  },
+  {
+    "id": 4,
+    "name": "Text prompt",
     "description": "Testing texts",
     "settings": {
       "slots": 2,
-      "randomPick": false,
+      "randomPick": true,
       "controls": {
         "text": true,
         "xy": true,
-        "buttons": 4,
-        "fader": 0
+        "buttons": 4
       }
     }
   }

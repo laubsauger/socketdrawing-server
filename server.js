@@ -48,7 +48,7 @@ const roomTypes = {
 // @todo: get this from a store of sorts (db, flat file whatever)
 const instancesConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'dummy/instances.json'), 'utf-8'));
 
-console.log(instancesConfig)
+console.log('Configured instances', instancesConfig.length);
 
 const instances = instancesConfig.map(instanceConfig => {
   let userSlots = [];
