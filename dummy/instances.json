@@ -35,7 +35,7 @@
       "randomPick": false,
       "controls": {
         "buttons": 4,
-        "fader": 4
+        "faders": 4
       }
     }
   },
