@@ -52,5 +52,19 @@
         "buttons": 4
       }
     }
+  },
+  {
+    "id": 5,
+    "name": "Prompt Battle",
+    "description": "Mars be prompin'",
+    "settings": {
+      "slots": 64,
+      "randomPick": false,
+      "sequentialPick": true,
+      "slotPick": false,
+      "controls": {
+        "eden": true
+      }
+    }
   }
 ]

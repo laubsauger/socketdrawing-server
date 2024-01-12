@@ -144,8 +144,12 @@ const assignClientSlot = (instance, roomState, newClient, requestedSlotIndex) =>
   const freeSlots = instance.userSlots.filter(slot => !slot.client.id);
   const freeSlotsExcludingLastTried = freeSlots.length > 1 ? freeSlots.filter(slot => slot.slot_index !== instance.lastTriedSlotIndex) : freeSlots;
 
+  console.log({freeSlotsExcludingLastTried})
+
   // pick random free slot
-  const nextFreeSlotIndex = getRandomArrayElement(freeSlotsExcludingLastTried).slot_index;
+  const nextFreeSlotIndex = instance.settings.randomPick ? getRandomArrayElement(freeSlotsExcludingLastTried).slot_index : freeSlotsExcludingLastTried[0].slot_index;
+
+  console.log({ nextFreeSlotIndex })
 
   // assign client id to it
   instance.userSlots = instance.userSlots.map(slot => {
@@ -190,21 +194,6 @@ function setupSocketServer() {
 
   io.on('connection', (client) => {
     let assignedClientSlotIndex = false;
-
-    // client.on('DISCO_DIFFUSION_PROMPT', data => {
-    //   const instance = instances.filter(item => item.id === client.instanceId)[0];
-    //
-    //   if (!instance) {
-    //     console.error('DISCO_DIFFUSION_PROMPT::Invalid Instance');
-    //     return false;
-    //   }
-    //
-    //   console.log(`DISCO_DIFFUSION_PROMPT`, client.id, data);
-    //   io.sockets.to(instance.rooms.control).emit(
-    //     'DISCO_DIFFUSION_PROMPT',
-    //     data
-    //   );
-    // })
 
     // socket osc join request
     client.on('OSC_JOIN_REQUEST', (room) => {
@@ -286,7 +275,7 @@ function setupSocketServer() {
 
       io.sockets.to(instance.rooms.users).emit(
         'USER_JOINED',
-        newRoomState
+        { ...newRoomState, client_index: assignedClientSlotIndex }
       );
     });
 
@@ -312,7 +301,7 @@ function setupSocketServer() {
 
       io.sockets.to(instance.rooms.users).emit(
         'USER_LEFT',
-        newRoomState,
+        { ...newRoomState, client_index: assignedClientSlotIndex }
       );
 
       resetClientSlot(instance, client);
