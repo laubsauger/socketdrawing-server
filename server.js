@@ -308,6 +308,26 @@ function setupSocketServer() {
       console.log( 'User ' + client.id + '(' + assignedClientSlotIndex + ') disconnected');
     });
 
+    client.on('OSC_HOST_MESSAGE', ({ data, room }) => {
+      const processing_start = new Date().getTime();
+      const instance = instances.filter(item => item.rooms.control === room)[0];
+
+      if (!instance) {
+        console.error('OSC_HOST_MESSAGE::Invalid Instance');
+        return false;
+      }
+
+      console.log('OSC_HOST_MESSAGE', '| Instance:', instance.id, '|', data)
+
+      io.sockets.to(instance.rooms.users).emit(
+        'OSC_HOST_MESSAGE',
+        {
+          ...data,
+          processed: new Date().getTime() - processing_start,
+        }
+      );
+    })
+
     client.on('OSC_CTRL_MESSAGE', (data) => {
       const processing_start = new Date().getTime();
       const instance = instances.filter(item => item.id === client.instanceId)[0];
