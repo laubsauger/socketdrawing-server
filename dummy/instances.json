@@ -6,6 +6,8 @@
     "settings": {
       "slots": 4,
       "randomPick": false,
+      "slotPick": true,
+      "sequentialPick": true,
       "controls": {
         "xy": true,
         "buttons": 4
@@ -19,6 +21,8 @@
     "settings": {
       "slots": 4,
       "randomPick": false,
+      "slotPick": true,
+      "sequentialPick": true,
       "controls": {
         "buttons": 4,
         "accelerometer": true,
@@ -33,6 +37,8 @@
     "settings": {
       "slots": 4,
       "randomPick": false,
+      "slotPick": true,
+      "sequentialPick": true,
       "controls": {
         "buttons": 4,
         "faders": 4
@@ -46,6 +52,8 @@
     "settings": {
       "slots": 2,
       "randomPick": true,
+      "slotPick": true,
+      "sequentialPick": false,
       "controls": {
         "text": true,
         "xy": true,
