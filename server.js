@@ -56,7 +56,7 @@ const instances = instancesConfig.map(instanceConfig => {
   for (let i = 0; i < instanceConfig.settings.slots; i++) {
     userSlots.push({
       slot_index: i + 1,
-      client: {},
+      client: null,
     });
   }
 
@@ -67,6 +67,7 @@ const instances = instancesConfig.map(instanceConfig => {
       control: `${roomTypes.control}:${instanceConfig.id}`,
     },
     userSlots: userSlots,
+    users: [],
     lastTriedSlotIndex: 0,
   }
 });
@@ -141,10 +142,10 @@ const assignClientSlot = (instance, roomState, newClient, requestedSlotIndex) =>
   }
 
   // get free slots
-  const freeSlots = instance.userSlots.filter(slot => !slot.client.id);
+  const freeSlots = instance.userSlots.filter(slot => !slot.client);
   const freeSlotsExcludingLastTried = freeSlots.length > 1 ? freeSlots.filter(slot => slot.slot_index !== instance.lastTriedSlotIndex) : freeSlots;
 
-  console.log({freeSlotsExcludingLastTried})
+  // console.log({freeSlotsExcludingLastTried})
 
   // pick random free slot
   const nextFreeSlotIndex = instance.settings.randomPick ? getRandomArrayElement(freeSlotsExcludingLastTried).slot_index : freeSlotsExcludingLastTried[0].slot_index;
@@ -169,15 +170,19 @@ const assignClientSlot = (instance, roomState, newClient, requestedSlotIndex) =>
 const resetClientSlot = (instance, client) => {
   console.log(instance)
   instance.userSlots = instance.userSlots.map(slot => {
-    if (slot.client.id !== client.id) {
+    if (slot.client && slot.client.id !== client.id) {
       return slot;
     }
 
     return {
       ...slot,
-      client: {},
+      client: null,
     }
   });
+}
+
+const isObjectEmpty = (obj) => {
+  return Object.keys(obj).length === 0 && obj.constructor === Object
 }
 
 const createRoomState = (instance, clientsInRoom) => {
@@ -186,6 +191,7 @@ const createRoomState = (instance, clientsInRoom) => {
   return {
     usedSlots: numClients,
     maxSlots: instance.settings.slots,
+    users: instance.users,
   };
 }
 
@@ -261,6 +267,10 @@ function setupSocketServer() {
         userSlot: assignedClientSlotIndex,
       });
 
+      if (!instance.users.filter(user => user.id === client.id).length) {
+        instance.users.push({ id: client.id, client_index: assignedClientSlotIndex, name: '' })
+      }
+
       const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.users));
       console.log('OSC_CTRL_USER_JOINED', '| Instance:', instance.id,  client.id);
       io.sockets.to(instance.rooms.control).emit(
@@ -275,7 +285,11 @@ function setupSocketServer() {
 
       io.sockets.to(instance.rooms.users).emit(
         'USER_JOINED',
-        { ...newRoomState, client_index: assignedClientSlotIndex }
+        {
+          ...newRoomState,
+          id: client.id,
+          client_index: assignedClientSlotIndex
+        }
       );
     });
 
@@ -287,6 +301,8 @@ function setupSocketServer() {
         return false;
       }
 
+      instance.users = instance.users.filter(item => item.id !== client.id)
+
       const newRoomState = createRoomState(instance, io.sockets.adapter.rooms.get(instance.rooms.users));
 
       io.sockets.to(instance.rooms.control).emit(
@@ -295,13 +311,18 @@ function setupSocketServer() {
           id: client.id,
           client_index: assignedClientSlotIndex,
           usedSlots: newRoomState.usedSlots,
-          maxSlots: newRoomState.maxSlots,
+          maxSlots: instance.settings.slots,
         }
       );
 
       io.sockets.to(instance.rooms.users).emit(
         'USER_LEFT',
-        { ...newRoomState, client_index: assignedClientSlotIndex }
+        {
+          ...newRoomState,
+          id: client.id,
+          users: newRoomState.users.filter(item => item.id !== assignedClientSlotIndex),
+          client_index: assignedClientSlotIndex
+        }
       );
 
       resetClientSlot(instance, client);
@@ -348,6 +369,19 @@ function setupSocketServer() {
           processed: new Date().getTime() - processing_start,
         }
       );
+
+      if (data && data.message && data.message === 'userName') {
+        instance.users.map(user => user.id === client.id ? { ...user, name: data.text } : user)
+        io.sockets.to(instance.rooms.users).emit(
+          'USER_UPDATE',
+          {
+            id: client.id,
+            name: data.text,
+            client_index: assignedClientSlotIndex,
+            processed: new Date().getTime() - processing_start,
+          }
+        );
+      }
     });
 
     client.on('connect_failed', (err) => {
