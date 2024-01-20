@@ -371,7 +371,8 @@ function setupSocketServer() {
       );
 
       if (data && data.message && data.message === 'userName') {
-        instance.users.map(user => user.id === client.id ? { ...user, name: data.text } : user)
+        instance.users = instance.users.map(user => user.id === client.id ? { ...user, name: data.text } : user)
+
         io.sockets.to(instance.rooms.users).emit(
           'USER_UPDATE',
           {
