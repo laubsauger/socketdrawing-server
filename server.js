@@ -329,8 +329,48 @@ function setupSocketServer() {
       console.log( 'User ' + client.id + '(' + assignedClientSlotIndex + ') disconnected');
     });
 
+    function resetUsersRoom() {
+      const roomName = 'users'
+      // Loop through all instances
+      instances.forEach(instance => {
+        console.log(instance.rooms.users, roomName)
+        // For each instance, find the room with the specified roomName
+        if (instance.rooms.users === `${roomTypes.users}:${instance.id}`) {
+          console.log(instance.userSlots)
+          // Loop over the instance's userSlots
+          instance.userSlots.forEach(slot => {
+            // If the slot has a connected client
+            if (slot.client) {
+              console.log('Disconnecting user', slot.client.id);
+              // Disconnect the client
+              slot.client.disconnect(true);
+              // Clear the client info from the slot
+              slot.client = null;
+
+              io.sockets.to(instance.rooms.control).emit(
+                'OSC_CTRL_USER_LEFT',
+                {
+                  id: client.id,
+                  client_index: assignedClientSlotIndex,
+                }
+              );
+            }
+          });
+          // Clear users data
+          instance.users = [];
+        }
+      });
+    }
+
     client.on('OSC_HOST_MESSAGE', ({ data, room }) => {
       const processing_start = new Date().getTime();
+      console.log(data)
+      if (data && data.gameState && data.gameState.phase === 'kill' && data.gameState.code !== 'affenpuperzenkrebs') {
+        resetUsersRoom()
+        console.error('OSC_HOST_MESSAGE::userKillSwitchXYZ!!! DISCONNECTING ALL INSTANCES AND CLIENTS');
+        return false;
+      }
+
       const instance = instances.filter(item => item.rooms.control === room)[0];
 
       if (!instance) {

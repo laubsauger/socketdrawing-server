@@ -1,5 +1,19 @@
 [
   {
+    "id": 5,
+    "name": "Prompt Battle",
+    "description": "Mars be prompin'",
+    "settings": {
+      "slots": 64,
+      "randomPick": false,
+      "sequentialPick": true,
+      "slotPick": false,
+      "controls": {
+        "eden": true
+      }
+    }
+  },
+  {
     "id": 1,
     "name": "Default",
     "description": "Awesome session description",
@@ -58,20 +72,6 @@
         "text": true,
         "xy": true,
         "buttons": 4
-      }
-    }
-  },
-  {
-    "id": 5,
-    "name": "Prompt Battle",
-    "description": "Mars be prompin'",
-    "settings": {
-      "slots": 64,
-      "randomPick": false,
-      "sequentialPick": true,
-      "slotPick": false,
-      "controls": {
-        "eden": true
       }
     }
   }
