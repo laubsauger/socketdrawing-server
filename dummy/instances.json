@@ -9,7 +9,49 @@
       "sequentialPick": true,
       "slotPick": false,
       "controls": {
-        "eden": true
+        "eden": [
+          {
+            "id": "eden",
+            "type": "eden"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 6,
+    "name": "Draw Diffusion",
+    "description": "Live Painting with LCM'",
+    "settings": {
+      "slots": 10,
+      "randomPick": false,
+      "sequentialPick": true,
+      "slotPick": true,
+      "controls": {
+        "xy": [
+          {
+            "id": "xy",
+            "type": "paint"
+          }
+        ],
+        "texts": [
+          {
+            "id": "prompt_1",
+            "type": "text",
+            "options": {
+              "label": "Prompt 1",
+              "submit": false
+            }
+          },
+          {
+            "id": "prompt_2",
+            "type": "text",
+            "options": {
+              "label": "Prompt 2",
+              "submit": false
+            }
+          }
+        ]
       }
     }
   },
@@ -23,8 +65,30 @@
       "slotPick": true,
       "sequentialPick": true,
       "controls": {
-        "xy": true,
-        "buttons": 4
+        "xy": [
+          {
+            "id": "xy",
+            "type": "crosshair"
+          }
+        ],
+        "buttons": [
+          {
+            "id": "b1",
+            "type": "button"
+          },
+          {
+            "id": "b2",
+            "type": "button"
+          },
+          {
+            "id": "b3",
+            "type": "button"
+          },
+          {
+            "id": "b4",
+            "type": "button"
+          }
+        ]
       }
     }
   },
@@ -38,9 +102,34 @@
       "slotPick": true,
       "sequentialPick": true,
       "controls": {
-        "buttons": 4,
-        "accelerometer": true,
-        "gyroscope": true
+        "buttons": [
+          {
+            "id": "b1",
+            "type": "button"
+          },
+          {
+            "id": "b2",
+            "type": "button"
+          },
+          {
+            "id": "b3",
+            "type": "button"
+          },
+          {
+            "id": "b4",
+            "type": "button"
+          }
+        ],
+        "sensors": [
+          {
+            "id": "acc",
+            "type": "accelerometer"
+          },
+          {
+            "id": "gyro",
+            "type": "gyroscope"
+          }
+        ]
       }
     }
   },
@@ -54,8 +143,42 @@
       "slotPick": true,
       "sequentialPick": true,
       "controls": {
-        "buttons": 4,
-        "faders": 4
+        "buttons": [
+          {
+            "id": "b1",
+            "type": "button"
+          },
+          {
+            "id": "b2",
+            "type": "button"
+          },
+          {
+            "id": "b3",
+            "type": "button"
+          },
+          {
+            "id": "b4",
+            "type": "button"
+          }
+        ],
+        "faders": [
+          {
+            "id": "f1",
+            "type": "fader"
+          },
+          {
+            "id": "f2",
+            "type": "fader"
+          },
+          {
+            "id": "f3",
+            "type": "fader"
+          },
+          {
+            "id": "f4",
+            "type": "fader"
+          }
+        ]
       }
     }
   },
@@ -69,9 +192,42 @@
       "slotPick": true,
       "sequentialPick": false,
       "controls": {
-        "text": true,
-        "xy": true,
-        "buttons": 4
+        "text": [
+          {
+            "id": "text",
+            "type": "text",
+            "options": {
+              "submit": true
+            }
+          }
+        ],
+        "xy": [
+          {
+            "id": "xy",
+            "type": "xy",
+            "options": {
+              "mode": "crosshair"
+            }
+          }
+        ],
+        "buttons": [
+          {
+            "id": "b1",
+            "type": "button"
+          },
+          {
+            "id": "b2",
+            "type": "button"
+          },
+          {
+            "id": "b3",
+            "type": "button"
+          },
+          {
+            "id": "b4",
+            "type": "button"
+          }
+        ]
       }
     }
   }
