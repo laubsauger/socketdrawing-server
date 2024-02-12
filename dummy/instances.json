@@ -31,7 +31,10 @@
         "xy": [
           {
             "id": "xy",
-            "type": "paint"
+            "type": "xy",
+            "options": {
+              "mode": "paint"
+            }
           }
         ],
         "texts": [
@@ -68,7 +71,10 @@
         "xy": [
           {
             "id": "xy",
-            "type": "crosshair"
+            "type": "xy",
+            "options": {
+              "mode": "crosshair"
+            }
           }
         ],
         "buttons": [
