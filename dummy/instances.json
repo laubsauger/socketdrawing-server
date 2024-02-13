@@ -21,7 +21,7 @@
   {
     "id": 6,
     "name": "Draw Diffusion",
-    "description": "Live Painting with LCM'",
+    "description": "Live Painting with LCM",
     "settings": {
       "slots": 10,
       "randomPick": false,
