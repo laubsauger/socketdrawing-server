@@ -378,7 +378,7 @@ function setupSocketServer() {
         return false;
       }
 
-      console.log('OSC_HOST_MESSAGE', '| Instance:', instance.id, '|', data)
+      console.log('OSC_HOST_MESSAGE', '| Instance:', instance.id, '|', JSON.stringify(data, null, 2))
 
       io.sockets.to(instance.rooms.users).emit(
         'OSC_HOST_MESSAGE',
