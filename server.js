@@ -379,6 +379,7 @@ function setupSocketServer() {
       }
 
       console.log('OSC_HOST_MESSAGE', '| Instance:', instance.id, '|', JSON.stringify(data, null, 2))
+      console.log({ userSlots: instance.userSlots, users: instance.users})
 
       io.sockets.to(instance.rooms.users).emit(
         'OSC_HOST_MESSAGE',
