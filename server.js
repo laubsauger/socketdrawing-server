@@ -336,7 +336,7 @@ function setupSocketServer() {
         console.log(instance.rooms.users, roomName)
         // For each instance, find the room with the specified roomName
         if (instance.rooms.users === `${roomTypes.users}:${instance.id}`) {
-          console.log(instance.userSlots)
+          console.log(instance.userSlots.filter(slot => slot.client !== null))
           // Loop over the instance's userSlots
           instance.userSlots.forEach(slot => {
             // If the slot has a connected client
@@ -379,7 +379,7 @@ function setupSocketServer() {
       }
 
       console.log('OSC_HOST_MESSAGE', '| Instance:', instance.id, '|', JSON.stringify(data, null, 2))
-      console.log({ userSlots: instance.userSlots, users: instance.users})
+      console.log({ userSlots: instance.userSlots.filter(slot => slot.client !== null), users: instance.users})
 
       io.sockets.to(instance.rooms.users).emit(
         'OSC_HOST_MESSAGE',
