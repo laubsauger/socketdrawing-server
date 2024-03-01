@@ -54,6 +54,24 @@
               "submit": false
             }
           }
+        ],
+        "buttons": [
+          {
+            "id": "random_seed",
+            "type": "button",
+            "options": {
+              "label": "Randomize",
+              "variant": "yellow"
+            }
+          },
+          {
+            "id": "freeze_input",
+            "type": "button",
+            "options": {
+              "label": "Freeze",
+              "variant": "blue"
+            }
+          }
         ]
       }
     }
