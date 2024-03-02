@@ -43,7 +43,8 @@
             "type": "text",
             "options": {
               "label": "Prompt 1",
-              "submit": false
+              "submit": false,
+              "maxLength": 45
             }
           },
           {
@@ -51,7 +52,8 @@
             "type": "text",
             "options": {
               "label": "Prompt 2",
-              "submit": false
+              "submit": false,
+              "maxLength": 45
             }
           }
         ],
@@ -66,7 +68,7 @@
           },
           {
             "id": "freeze",
-            "type": "button",
+            "type": "toggle",
             "options": {
               "label": "Freeze",
               "variant": "blue"
