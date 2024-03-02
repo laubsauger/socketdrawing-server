@@ -39,7 +39,7 @@
         ],
         "texts": [
           {
-            "id": "prompt_1",
+            "id": "prompt1",
             "type": "text",
             "options": {
               "label": "Prompt 1",
@@ -47,7 +47,7 @@
             }
           },
           {
-            "id": "prompt_2",
+            "id": "prompt2",
             "type": "text",
             "options": {
               "label": "Prompt 2",
@@ -57,7 +57,7 @@
         ],
         "buttons": [
           {
-            "id": "random_seed",
+            "id": "random",
             "type": "button",
             "options": {
               "label": "Randomize",
@@ -65,7 +65,7 @@
             }
           },
           {
-            "id": "freeze_input",
+            "id": "freeze",
             "type": "button",
             "options": {
               "label": "Freeze",
