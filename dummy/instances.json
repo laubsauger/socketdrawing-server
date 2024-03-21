@@ -44,7 +44,7 @@
             "options": {
               "label": "Prompt 1",
               "submit": false,
-              "maxLength": 45
+              "maxLength": 120
             }
           },
           {
@@ -53,7 +53,7 @@
             "options": {
               "label": "Prompt 2",
               "submit": false,
-              "maxLength": 45
+              "maxLength": 120
             }
           }
         ],
