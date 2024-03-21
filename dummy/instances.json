@@ -44,7 +44,8 @@
             "options": {
               "label": "Prompt 1",
               "submit": false,
-              "maxLength": 120
+              "maxLength": 120,
+              "hasClearBtn": true
             }
           },
           {
@@ -53,17 +54,37 @@
             "options": {
               "label": "Prompt 2",
               "submit": false,
-              "maxLength": 120
+              "maxLength": 120,
+              "hasClearBtn": true
             }
           }
         ],
         "buttons": [
           {
+            "id": "draw",
+            "type": "toggle",
+            "options": {
+              "label": "Draw",
+              "variant": "red",
+              "size": "large"
+            }
+          },
+          {
             "id": "random",
             "type": "button",
             "options": {
               "label": "Randomize",
-              "variant": "yellow"
+              "variant": "yellow",
+              "size": "large"
+            }
+          },
+          {
+            "id": "interrogate",
+            "type": "button",
+            "options": {
+              "label": "Interrogate",
+              "variant": "green",
+              "size": "large"
             }
           },
           {
@@ -71,7 +92,8 @@
             "type": "toggle",
             "options": {
               "label": "Freeze",
-              "variant": "blue"
+              "variant": "blue",
+              "size": "large"
             }
           }
         ]
