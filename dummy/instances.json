@@ -61,6 +61,16 @@
         ],
         "buttons": [
           {
+            "id": "addpreset",
+            "type": "button",
+            "options": {
+              "admin": true,
+              "label": "Add Preset",
+              "variant": "black",
+              "size": "large"
+            }
+          },
+          {
             "id": "draw",
             "type": "toggle",
             "options": {
