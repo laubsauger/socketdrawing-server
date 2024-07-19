@@ -1,5 +1,69 @@
 [
   {
+    "id": 7,
+    "name": "Book Flip - Eden x 204",
+    "description": "",
+    "settings": {
+      "slots": 64,
+      "randomPick": false,
+      "sequentialPick": true,
+      "slotPick": false,
+      "controls": {
+        "texts": [
+          {
+            "id": "text",
+            "type": "text",
+            "options": {
+              "multiline": true,
+              "singleUse": false,
+              "label": "Prompt",
+              "submit": true,
+              "maxLength": 500,
+              "hasClearBtn": true,
+              "onChangeEvent": true
+            }
+          }
+        ],
+        "buttons": [
+          {
+            "id": "prev",
+            "type": "button",
+            "options": {
+              "label": "Prev",
+              "variant": "black",
+              "size": "large"
+            }
+          },
+          {
+            "id": "listen",
+            "type": "toggle",
+            "options": {
+              "icon": "Microphone",
+              "variant": "red"
+            }
+          },
+          {
+            "id": "promptenhance",
+            "type": "button",
+            "options": {
+              "icon": "Magicwand",
+              "variant": "green"
+            }
+          },
+          {
+            "id": "next",
+            "type": "button",
+            "options": {
+              "label": "Next",
+              "variant": "black",
+              "size": "large"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
     "id": 5,
     "name": "Prompt Battle",
     "description": "Mars be prompin'",
