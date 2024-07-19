@@ -31,7 +31,8 @@
             "options": {
               "label": "Prev",
               "variant": "black",
-              "size": "large"
+              "size": "large",
+              "fill": true
             }
           },
           {
@@ -39,7 +40,8 @@
             "type": "toggle",
             "options": {
               "icon": "Microphone",
-              "variant": "red"
+              "variant": "red",
+              "size": "large"
             }
           },
           {
@@ -47,7 +49,8 @@
             "type": "button",
             "options": {
               "icon": "Magicwand",
-              "variant": "green"
+              "variant": "yellow",
+              "size": "large"
             }
           },
           {
@@ -56,7 +59,8 @@
             "options": {
               "label": "Next",
               "variant": "black",
-              "size": "large"
+              "size": "large",
+              "fill": true
             }
           }
         ]
