@@ -39,15 +39,6 @@
             }
           },
           {
-            "id": "listen",
-            "type": "toggle",
-            "options": {
-              "icon": "Microphone",
-              "variant": "red",
-              "size": "large"
-            }
-          },
-          {
             "id": "promptenhance",
             "type": "button",
             "options": {
@@ -158,15 +149,6 @@
               "icon": "Dice",
               "label": "Randomize",
               "variant": "yellow",
-              "size": "large"
-            }
-          },
-          {
-            "id": "interrogate",
-            "type": "button",
-            "options": {
-              "label": "Interrogate",
-              "variant": "green",
               "size": "large"
             }
           },
