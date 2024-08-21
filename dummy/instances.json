@@ -62,6 +62,64 @@
     }
   },
   {
+    "id": 8,
+    "name": "Retro Bazaar",
+    "description": "",
+    "settings": {
+      "slots": 64,
+      "randomPick": false,
+      "sequentialPick": true,
+      "slotPick": false,
+      "layout": {
+        "wrapButtons": false
+      },
+      "controls": {
+        "buttons": [
+          {
+            "id": "style1",
+            "type": "button",
+            "options": {
+              "label": "Style 1",
+              "variant": "black",
+              "size": "large",
+              "fill": true
+            }
+          },
+          {
+            "id": "style2",
+            "type": "button",
+            "options": {
+              "label": "Style 2",
+              "variant": "yellow",
+              "size": "large",
+              "fill": true
+            }
+          },
+          {
+            "id": "style3",
+            "type": "button",
+            "options": {
+              "label": "Style 3",
+              "variant": "blue",
+              "size": "large",
+              "fill": true
+            }
+          },
+          {
+            "id": "style4",
+            "type": "button",
+            "options": {
+              "label": "Style 4",
+              "variant": "green",
+              "size": "large",
+              "fill": true
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
     "id": 5,
     "name": "Prompt Battle",
     "description": "Mars be prompin'",
